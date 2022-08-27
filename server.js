@@ -29,8 +29,15 @@ function writeData(data) {
 }
 
 function readUsername(userId) {
+  const config = {
+    headers: { Authorization: `Bearer ${botToken}` },
+    params: {
+      user: userId,
+    },
+  };
+
   axios
-    .get("https://slack.com/api/reactions.get", config)
+    .get("https://slack.com/api/users.info", config)
     .then((response) => {
       const profile = response.data.user.profile;
       if (profile.display_name) {
