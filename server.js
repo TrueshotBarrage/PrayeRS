@@ -78,7 +78,7 @@ function readUsername(userId) {
   });
 }
 
-function updateAux(isRider, req, res) {
+async function updateAux(isRider, req, res) {
   console.log(req);
   const text = req.body.text.toLowerCase().split(" ");
   const location = text[0];
@@ -89,7 +89,7 @@ function updateAux(isRider, req, res) {
   // Check if the location is valid
   if (rideLocations.includes(location)) {
     // Read the data.json file and parse it into a JSON object
-    let data = readData();
+    let data = await readData();
 
     // If the user is already in the data.json file, update the location;
     // otherwise, add the user & location to the data.json file
@@ -132,17 +132,17 @@ function updateAux(isRider, req, res) {
   }
 }
 
-app.post("/update/rider", (req, res) => {
-  updateAux(true, req, res);
+app.post("/update/rider", async (req, res) => {
+  await updateAux(true, req, res);
 });
 
-app.post("/update/driver", (req, res) => {
-  updateAux(false, req, res);
+app.post("/update/driver", async (req, res) => {
+  await updateAux(false, req, res);
 });
 
-app.post("/delete/driver", (req, res) => {
+app.post("/delete/driver", async (req, res) => {
   // Read the data.json file and parse it into a JSON object
-  let data = readData();
+  let data = await readData();
 
   // Delete the driver from the data.json file
   const userId = req.body.user_id;
@@ -161,8 +161,8 @@ app.post("/delete/driver", (req, res) => {
   }
 });
 
-app.get("/latest_data", (req, res) => {
-  const data = readData();
+app.get("/latest_data", async (req, res) => {
+  const data = await readData();
   res.send(data);
 });
 
@@ -186,8 +186,8 @@ function shuffle(array) {
   return array;
 }
 
-app.post("/generate_assignments", (req, res) => {
-  let data = readData();
+app.post("/generate_assignments", async (req, res) => {
+  let data = await readData();
 
   const config = {
     headers: { Authorization: `Bearer ${botToken}` },
@@ -259,7 +259,7 @@ app.post("/generate_assignments", (req, res) => {
     });
 });
 
-app.post("/events", (req, res) => {
+app.post("/events", async (req, res) => {
   res.send(req.body.challenge);
   res.end();
 
@@ -268,7 +268,7 @@ app.post("/events", (req, res) => {
   // Will leave this here for now.
   // switch (req.body.type) {
   //   case "reaction_added":
-  //     let data = readData();
+  //     let data = await readData();
   //     if (data.ts === req.body.event_ts) {
   //       ...
   //     }
