@@ -102,7 +102,42 @@ app.post("/generate_assignments", (req, res) => {
       timestamp: data.ts,
     },
   };
-  axios.get("https://slack.com/api/reactions.get", config);
+
+  axios
+    .get("https://slack.com/api/reactions.get", config)
+    .then((response) => {
+      const rxns = response.data.message.reactions;
+      const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
+      const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
+
+      let driverRiderMap = {};
+      for (const driver of data.drivers) {
+        driverRiderMap[driver.name] = [];
+      }
+
+      for (const userId of usersWhoReactedUniq) {
+        const rider = data.riders.find((rdr) => rdr.id === userId);
+        if (rider) {
+          const driver = data.drivers.find(
+            (drv) =>
+              drv.location === rider.location &&
+              drv.maxPassengers - driverRiderMap[driver.name].length > 0
+          );
+          if (driver) {
+            driverRiderMap[driver.name].push(rider.name);
+          }
+        }
+      }
+      const assignments = Object.entries(driverRiderMap).map(
+        ([driver, riders]) => {
+          return `${driver} => ${riders.join(", ")}`;
+        }
+      );
+      res.send(assignments.join("\n"));
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 });
 
 app.post("/events", (req, res) => {
