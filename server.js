@@ -47,7 +47,7 @@ function updateAux(isRider, req, res) {
 
     const userId = req.body.user_id;
     const riderIds = riderOrDriverArray.map((rider) => rider.id);
-    if (userId in riderIds) {
+    if (riderIds.includes(userId)) {
       const index = riderIds.indexOf(userId);
       riderOrDriverArray[index].location = location;
     } else {
