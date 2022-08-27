@@ -6,6 +6,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
 
@@ -27,7 +28,7 @@ function writeData(data) {
 
 function updateAux(isRider, req, res) {
   console.log(req);
-  const text = req.header.text.toLowerCase().split(" ");
+  const text = req.body.text.toLowerCase().split(" ");
   const location = text[0];
   if (isRider) {
     var maxPassengers = parseInt(text[1]);
@@ -42,7 +43,7 @@ function updateAux(isRider, req, res) {
     // otherwise, add the user & location to the data.json file
     let riderOrDriverArray = isRider ? data.riders : data.drivers;
 
-    const userId = req.header.user_id;
+    const userId = req.body.user_id;
     const riderIds = riderOrDriverArray.map((rider) => rider.id);
     if (userId in riderIds) {
       const index = riderIds.indexOf(userId);
@@ -50,7 +51,7 @@ function updateAux(isRider, req, res) {
     } else {
       riderOrDriverArray.push({
         id: userId,
-        name: req.header.user_name,
+        name: req.body.user_name,
         location,
         ...(!isRider && { maxPassengers }),
       });
@@ -60,10 +61,10 @@ function updateAux(isRider, req, res) {
     writeData(data);
 
     res.send(
-      `Successfully confirmed: ${req.header.user_name} => ${req.header.text}`
+      `Successfully confirmed: ${req.body.user_name} => ${req.body.text}`
     );
   } else {
-    res.send(`Sorry, ${req.header.text} is not a valid location.`);
+    res.send(`Sorry, ${req.body.text} is not a valid location.`);
   }
 }
 
@@ -80,19 +81,19 @@ app.post("/delete/driver", (req, res) => {
   let data = readData();
 
   // Delete the driver from the data.json file
-  const userId = req.header.user_id;
+  const userId = req.body.user_id;
   const drivers = data.drivers;
 
   const index = drivers.findIndex((driver) => driver.id === userId);
   if (index === -1) {
-    res.send(`Sorry, ${req.header.user_name} is not a valid driver.`);
+    res.send(`Sorry, ${req.body.user_name} is not a valid driver.`);
   } else {
     drivers.splice(index, 1);
 
     // Write the updated data to the data.json file
     writeData(data);
 
-    res.send(`Successfully deleted: ${req.header.user_name}`);
+    res.send(`Successfully deleted: ${req.body.user_name}`);
   }
 });
 
