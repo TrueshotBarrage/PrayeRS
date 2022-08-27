@@ -28,6 +28,22 @@ function writeData(data) {
   fs.writeFileSync("data.json", newData);
 }
 
+function readUsername(userId) {
+  axios
+    .get("https://slack.com/api/reactions.get", config)
+    .then((response) => {
+      const profile = response.data.user.profile;
+      if (profile.display_name) {
+        return profile.display_name;
+      } else {
+        return profile.real_name;
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
 function updateAux(isRider, req, res) {
   console.log(req);
   const text = req.body.text.toLowerCase().split(" ");
@@ -46,35 +62,39 @@ function updateAux(isRider, req, res) {
     let riderOrDriverArray = isRider ? data.riders : data.drivers;
 
     const userId = req.body.user_id;
-    const riderIds = riderOrDriverArray.map((rider) => rider.id);
-    if (riderIds.includes(userId)) {
-      const index = riderIds.indexOf(userId);
-      riderOrDriverArray[index].location = location;
-      if (!isRider) {
-        riderOrDriverArray[index].maxPassengers = maxPassengers;
+    readUsername(userId).then((username) => {
+      const userName = username;
+
+      const riderIds = riderOrDriverArray.map((rider) => rider.id);
+      if (riderIds.includes(userId)) {
+        const index = riderIds.indexOf(userId);
+        riderOrDriverArray[index].location = location;
+        if (!isRider) {
+          riderOrDriverArray[index].maxPassengers = maxPassengers;
+        }
+      } else {
+        riderOrDriverArray.push({
+          id: userId,
+          name: userName,
+          location,
+          ...(!isRider && { maxPassengers }),
+        });
       }
-    } else {
-      riderOrDriverArray.push({
-        id: userId,
-        name: req.body.user_name,
-        location,
-        ...(!isRider && { maxPassengers }),
-      });
-    }
 
-    // Write the updated data to the data.json file
-    writeData(data);
-    console.log(data);
+      // Write the updated data to the data.json file
+      writeData(data);
+      console.log(data);
 
-    if (isRider) {
-      res.send(
-        `Successfully updated rider ${req.body.user_name} to ${location}.`
-      );
-    } else {
-      res.send(
-        `Successfully updated driver ${req.body.user_name} to ${location} with ${maxPassengers} max passengers.`
-      );
-    }
+      if (isRider) {
+        res.send(
+          `Successfully updated rider ${req.body.user_name} to ${location}.`
+        );
+      } else {
+        res.send(
+          `Successfully updated driver ${req.body.user_name} to ${location} with ${maxPassengers} max passengers.`
+        );
+      }
+    });
   } else {
     res.send(`Sorry, ${req.body.text} is not a valid location.`);
   }
