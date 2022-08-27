@@ -1,0 +1,24 @@
+{
+  "name": "prayers",
+  "version": "1.0.0",
+  "description": "Server for PrayeRS",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.18.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TrueshotBarrage/PrayeRS.git"
+  },
+  "author": "David Kim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TrueshotBarrage/PrayeRS/issues"
+  },
+  "homepage": "https://github.com/TrueshotBarrage/PrayeRS#readme"
+}
