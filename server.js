@@ -108,7 +108,8 @@ app.post("/generate_assignments", (req, res) => {
     .then((response) => {
       const rxns = response.data.message.reactions;
       const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
-      const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
+      // const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
+      const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k"];
 
       let driverRiderMap = {};
       let ridersWithoutDriver = [];
