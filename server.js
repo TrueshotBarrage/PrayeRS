@@ -36,19 +36,15 @@ function readUsername(userId) {
     },
   };
 
-  axios
-    .get("https://slack.com/api/users.info", config)
-    .then((response) => {
-      const profile = response.data.user.profile;
-      if (profile.display_name) {
-        return profile.display_name;
-      } else {
-        return profile.real_name;
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  const promise = axios.get("https://slack.com/api/users.info", config);
+  return promise.then((response) => {
+    const profile = response.data.user.profile;
+    if (profile.display_name) {
+      return profile.display_name;
+    } else {
+      return profile.real_name;
+    }
+  });
 }
 
 function updateAux(isRider, req, res) {
