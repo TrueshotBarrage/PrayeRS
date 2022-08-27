@@ -272,6 +272,11 @@ app.get("/send/daily", (req, res) => {
   sendDailyReminderMessage(req, res);
 });
 
+// POST version is used for the slash command on Slack
+app.post("/send/daily", (req, res) => {
+  sendDailyReminderMessage(req, res);
+});
+
 app.listen(port, () => {
   console.log(`PrayeRS listening on port ${port}`);
 });
