@@ -34,7 +34,8 @@ async function readData() {
     "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
     config
   );
-  return await JSON.parse(res.body.record);
+  const record = await res.body.record;
+  return await JSON.parse(record);
 }
 
 // function writeData(data) {
