@@ -61,10 +61,17 @@ function updateAux(isRider, req, res) {
 
     // Write the updated data to the data.json file
     writeData(data);
+    console.log(data);
 
-    res.send(
-      `Successfully confirmed: ${req.body.user_name} => ${req.body.text}`
-    );
+    if (isRider) {
+      res.send(
+        `Successfully updated rider ${req.body.user_name} to ${location}.`
+      );
+    } else {
+      res.send(
+        `Successfully updated driver ${req.body.user_name} to ${location} with ${maxPassengers} max passengers.`
+      );
+    }
   } else {
     res.send(`Sorry, ${req.body.text} is not a valid location.`);
   }
@@ -99,9 +106,9 @@ app.post("/delete/driver", (req, res) => {
   }
 });
 
-app.get("/latest_ts", (req, res) => {
+app.get("/latest_data", (req, res) => {
   const data = readData();
-  res.send(data.ts);
+  res.send(data);
 });
 
 function shuffle(array) {
