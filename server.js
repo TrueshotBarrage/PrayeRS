@@ -141,11 +141,20 @@ app.post("/generate_assignments", (req, res) => {
             return `${driver} => ${riders.join(", ")}`;
           }
         );
-        res.send(
-          `${assignments.join(
-            "\n"
-          )}\n\nUnassigned riders: ${ridersWithoutDriver.join("\n")}`
-        );
+        const assignmentsStr = `${assignments.join(
+          "\n"
+        )}\n\nUnassigned riders: ${ridersWithoutDriver.join("\n")}`;
+        res.send(assignmentsStr);
+
+        // Write the message to the Slack channel
+        const config = {
+          headers: { Authorization: `Bearer ${botToken}` },
+        };
+        const message = {
+          channel: "C040PS45KBJ",
+          text: assignmentsStr,
+        };
+        axios.post("https://slack.com/api/chat.postMessage", message, config);
       }
     })
     .catch((error) => {
