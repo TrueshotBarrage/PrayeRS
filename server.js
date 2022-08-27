@@ -18,14 +18,45 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-function readData() {
-  const rawData = fs.readFileSync("data.json");
-  return JSON.parse(rawData);
+// function readData() {
+//   const rawData = fs.readFileSync("data.json");
+//   return JSON.parse(rawData);
+// }
+
+async function readData() {
+  config = {
+    headers: {
+      "X-Master-Key":
+        "$2b$10$.XzRnzXNCixKoIlMhzODn.0zZ.8qL7nxk5x.f4W0g7hWYjziW0Hl6",
+    },
+  };
+  const res = await axios.get(
+    "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
+    config
+  );
+  return await JSON.parse(res.body.record);
 }
 
-function writeData(data) {
+// function writeData(data) {
+//   const newData = JSON.stringify(data);
+//   fs.writeFileSync("data.json", newData);
+// }
+
+async function writeData(data) {
   const newData = JSON.stringify(data);
-  fs.writeFileSync("data.json", newData);
+
+  config = {
+    headers: {
+      "X-Master-Key":
+        "$2b$10$.XzRnzXNCixKoIlMhzODn.0zZ.8qL7nxk5x.f4W0g7hWYjziW0Hl6",
+      "Conte-Type": "application/json",
+    },
+  };
+  const res = await axios.put(
+    "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
+    newData,
+    config
+  );
 }
 
 function readUsername(userId) {
@@ -89,12 +120,10 @@ function updateAux(isRider, req, res) {
       console.log(data);
 
       if (isRider) {
-        res.send(
-          `Successfully updated rider ${req.body.user_name} to ${location}.`
-        );
+        res.send(`Successfully updated rider ${userName} to ${location}.`);
       } else {
         res.send(
-          `Successfully updated driver ${req.body.user_name} to ${location} with ${maxPassengers} max passengers.`
+          `Successfully updated driver ${userName} to ${location} with ${maxPassengers} max passengers.`
         );
       }
     });
@@ -247,10 +276,10 @@ app.post("/events", (req, res) => {
 });
 
 // Send a message to the #bot-test channel (C040PS45KBJ)
-app.get("/send/test", (req, res) => {
+app.get("/send/test/:text", (req, res) => {
   const message = {
     channel: "C040PS45KBJ",
-    text: "Hello World!",
+    text: req.params.text,
   };
   const config = {
     headers: { Authorization: `Bearer ${botToken}` },
