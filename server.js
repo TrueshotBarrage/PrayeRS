@@ -132,14 +132,20 @@ app.get("/send/test", (req, res) => {
     headers: { Authorization: `Bearer ${botToken}` },
   };
 
-  axios
-    .post("https://slack.com/api/chat.postMessage", message, config)
-    .then((messageRes) => {
+  axios.post("https://slack.com/api/chat.postMessage", message, config).then(
+    (messageRes) => {
       res.send(messageRes.ts);
+      console.log(messageRes.ts);
+
       let data = readData();
       data.ts = messageRes.ts;
       writeData(data);
-    });
+      console.log(data);
+    },
+    (error) => {
+      res.send(error);
+    }
+  );
 });
 
 app.listen(port, () => {
