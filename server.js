@@ -32,7 +32,7 @@ function updateAux(isRider, req, res) {
   console.log(req);
   const text = req.body.text.toLowerCase().split(" ");
   const location = text[0];
-  if (isRider) {
+  if (!isRider) {
     var maxPassengers = parseInt(text[1]);
   }
 
