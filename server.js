@@ -5,7 +5,7 @@ const axios = require("axios");
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
+// app.use(express.json());
 
 const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
 
