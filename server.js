@@ -112,7 +112,7 @@ app.post("/generate_assignments", (req, res) => {
       } else {
         const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
         // const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
-        const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k"];
+        const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k", "l"];
 
         let driverRiderMap = {};
         let ridersWithoutDriver = [];
