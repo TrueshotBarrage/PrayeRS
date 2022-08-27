@@ -26,6 +26,7 @@ function writeData(data) {
 }
 
 function updateAux(isRider, req, res) {
+  console.log(req);
   const text = req.header.text.toLowerCase().split(" ");
   const location = text[0];
   if (isRider) {
