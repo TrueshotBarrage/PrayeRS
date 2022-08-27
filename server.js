@@ -234,7 +234,7 @@ function sendDailyReminderMessage(req, res) {
 
   const message = {
     channel: "C040PS45KBJ",
-    text: `@channel If you would like a ride to EMP tmrw (${tomorrowStr}), please react to this message :) beep boop`,
+    text: `<!channel> If you would like a ride to EMP tmrw (${tomorrowStr}), please react to this message :) beep boop`,
   };
   const config = {
     headers: { Authorization: `Bearer ${botToken}` },
