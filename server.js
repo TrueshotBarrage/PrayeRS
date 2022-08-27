@@ -23,14 +23,14 @@ app.get("/", (req, res) => {
 //   return JSON.parse(rawData);
 // }
 
-function readData() {
+async function readData() {
   config = {
     headers: {
       "X-Master-Key":
         "$2b$10$.XzRnzXNCixKoIlMhzODn.0zZ.8qL7nxk5x.f4W0g7hWYjziW0Hl6",
     },
   };
-  axios
+  return await axios
     .get("https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917", config)
     .then((response) => {
       return JSON.parse(response.data.record);
@@ -45,7 +45,7 @@ function readData() {
 //   fs.writeFileSync("data.json", newData);
 // }
 
-async function writeData(data) {
+function writeData(data) {
   const newData = JSON.stringify(data);
 
   config = {
@@ -298,7 +298,7 @@ app.get("/send/test/:text", (req, res) => {
   );
 });
 
-function sendDailyReminderMessage(req, res) {
+async function sendDailyReminderMessage(req, res) {
   // Compute tomorrow's date
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -321,7 +321,7 @@ function sendDailyReminderMessage(req, res) {
       res.send(messageRes.data.ts);
       console.log(messageRes.data.ts);
 
-      let data = readData();
+      let data = await readData();
       data.ts = messageRes.data.ts;
       writeData(data);
       console.log(data);
@@ -333,13 +333,13 @@ function sendDailyReminderMessage(req, res) {
 }
 
 // Send a message to the #prayermeeting channel (CTEJU34FN)
-app.get("/send/daily", (req, res) => {
-  sendDailyReminderMessage(req, res);
+app.get("/send/daily", async (req, res) => {
+  await sendDailyReminderMessage(req, res);
 });
 
 // POST version is used for the slash command on Slack
-app.post("/send/daily", (req, res) => {
-  sendDailyReminderMessage(req, res);
+app.post("/send/daily", async (req, res) => {
+  await sendDailyReminderMessage(req, res);
 });
 
 app.listen(port, () => {
