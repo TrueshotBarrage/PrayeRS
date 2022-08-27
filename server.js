@@ -26,24 +26,32 @@ function writeData(data) {
 }
 
 function updateAux(isRider, req, res) {
+  const text = req.body.text.toLowerCase().split(" ");
+  const location = text[0];
+  if (isRider) {
+    var maxPassengers = parseInt(text[1]);
+  }
+
   // Check if the location is valid
-  if (rideLocations.includes(req.body.text)) {
+  if (rideLocations.includes(location)) {
     // Read the data.json file and parse it into a JSON object
     let data = readData();
 
     // If the user is already in the data.json file, update the location;
     // otherwise, add the user & location to the data.json file
     let riderOrDriverArray = isRider ? data.riders : data.drivers;
+
     const userId = req.body.user_id;
     const riderIds = riderOrDriverArray.map((rider) => rider.id);
     if (userId in riderIds) {
       const index = riderIds.indexOf(userId);
-      riderOrDriverArray[index].location = req.body.text;
+      riderOrDriverArray[index].location = location;
     } else {
       riderOrDriverArray.push({
         id: userId,
         name: req.body.user_name,
-        location: req.body.text,
+        location,
+        ...(!isRider && { maxPassengers }),
       });
     }
 
