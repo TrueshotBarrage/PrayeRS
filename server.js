@@ -87,6 +87,11 @@ app.post("/delete/driver", (req, res) => {
   }
 });
 
+app.get("/latest_ts", (req, res) => {
+  const data = readData();
+  res.send(data.ts);
+});
+
 app.post("/generate_assignments", (req, res) => {
   let data = readData();
 
