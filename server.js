@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 
 function updateAux(isRider, req, res) {
   // Check if the location is valid
-  if (rideLocations.includes(userLocation)) {
+  if (rideLocations.includes(req.body.text)) {
     // Read the data.json file and parse it into a JSON object
     const rawData = fs.readFileSync("data.json");
     let data = JSON.parse(rawData);
@@ -47,9 +47,11 @@ function updateAux(isRider, req, res) {
     const newData = JSON.stringify(data);
     fs.writeFileSync("data.json", newData);
 
-    res.send(`Successfully confirmed: ${user} => ${userLocation}`);
+    res.send(
+      `Successfully confirmed: ${req.body.user_name} => ${req.body.text}`
+    );
   } else {
-    res.send(`Sorry, ${userLocation} is not a valid location.`);
+    res.send(`Sorry, ${req.body.text} is not a valid location.`);
   }
 }
 
@@ -84,8 +86,14 @@ app.post("/delete/driver", (req, res) => {
   }
 });
 
-app.post("/reaction", (req, res) => {
-  res.send(req.challenge);
+app.post("/events", (req, res) => {
+  res.send(req.body.challenge);
+  res.end();
+
+  // switch (req.body.type) {
+  //   case "reaction_added":
+
+  // }
 });
 
 app.listen(port, () => {
