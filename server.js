@@ -138,7 +138,7 @@ app.post("/generate_assignments", (req, res) => {
   axios
     .get("https://slack.com/api/reactions.get", config)
     .then((response) => {
-      const rxns = response.data.message.reactions;
+      const rxns = response.data.message?.reactions;
       if (!rxns) {
         res.send("No one reacted to the message.");
       } else {
