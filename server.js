@@ -33,7 +33,7 @@ async function readData() {
   return await axios
     .get("https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917", config)
     .then((response) => {
-      return JSON.parse(response.data.record);
+      return response.data.record;
     })
     .catch((error) => {
       console.log(error);
