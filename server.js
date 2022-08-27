@@ -107,42 +107,46 @@ app.post("/generate_assignments", (req, res) => {
     .get("https://slack.com/api/reactions.get", config)
     .then((response) => {
       const rxns = response.data.message.reactions;
-      const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
-      // const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
-      const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k"];
+      if (!rxns) {
+        res.send("No one reacted to the message.");
+      } else {
+        const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
+        // const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
+        const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k"];
 
-      let driverRiderMap = {};
-      let ridersWithoutDriver = [];
-      for (const driver of data.drivers) {
-        driverRiderMap[driver.name] = [];
-      }
+        let driverRiderMap = {};
+        let ridersWithoutDriver = [];
+        for (const driver of data.drivers) {
+          driverRiderMap[driver.name] = [];
+        }
 
-      for (const userId of usersWhoReactedUniq) {
-        const rider = data.riders.find((rdr) => rdr.id === userId);
-        if (rider) {
-          const driver = data.drivers.find(
-            (drv) =>
-              drv.location === rider.location &&
-              drv.maxPassengers - driverRiderMap[driver.name].length > 0
-          );
-          if (driver) {
-            driverRiderMap[driver.name].push(rider.name);
-          } else {
-            ridersWithoutDriver.push(rider.name);
-            console.log(`No driver found for ${rider.name}`);
+        for (const userId of usersWhoReactedUniq) {
+          const rider = data.riders.find((rdr) => rdr.id === userId);
+          if (rider) {
+            const driver = data.drivers.find(
+              (drv) =>
+                drv.location === rider.location &&
+                drv.maxPassengers - driverRiderMap[drv.name].length > 0
+            );
+            if (driver) {
+              driverRiderMap[driver.name].push(rider.name);
+            } else {
+              ridersWithoutDriver.push(rider.name);
+              console.log(`No driver found for ${rider.name}`);
+            }
           }
         }
+        const assignments = Object.entries(driverRiderMap).map(
+          ([driver, riders]) => {
+            return `${driver} => ${riders.join(", ")}`;
+          }
+        );
+        res.send(
+          `${assignments.join(
+            "\n"
+          )}\n\nUnassigned riders: ${ridersWithoutDriver.join("\n")}`
+        );
       }
-      const assignments = Object.entries(driverRiderMap).map(
-        ([driver, riders]) => {
-          return `${driver} => ${riders.join(", ")}`;
-        }
-      );
-      res.send(
-        `${assignments.join(
-          "\n"
-        )}\n\nUnassigned riders: ${ridersWithoutDriver.join("\n")}`
-      );
     })
     .catch((error) => {
       console.log(error);
