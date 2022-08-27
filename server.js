@@ -140,8 +140,6 @@ app.get("/send/test", (req, res) => {
       data.ts = messageRes.ts;
       writeData(data);
     });
-
-  res.send("Message sent!");
 });
 
 app.listen(port, () => {
