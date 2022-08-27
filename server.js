@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("fs");
+const axios = require("axios");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -101,11 +102,16 @@ app.post("/events", (req, res) => {
 // Send a message to the #prayermeeting channel (CTEJU34FN)
 // #bot-test channel (C040PS45KBJ)
 app.get("/send/test", (req, res) => {
-  res.send({
-    token: botToken,
+  const message = {
     channel: "C040PS45KBJ",
     text: "Hello World!",
-  });
+  };
+  const config = {
+    headers: { Authorization: `Bearer ${botToken}` },
+  };
+  axios.post("https://slack.com/api/chat.postMessage", message, config);
+
+  res.send("Message sent!");
 });
 
 app.listen(port, () => {
