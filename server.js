@@ -9,26 +9,27 @@ app.use(express.json());
 
 const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
 
-// app.set("etag", false);
-// app.use(function (req, res, next) {
-//   // Delete all headers related to cache
-//   req.headers["if-none-match"] = "";
-//   req.headers["if-modified-since"] = "";
-//   next();
-// });
-
 const rideLocations = ["north", "west", "collegetown"];
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+function readData() {
+  const rawData = fs.readFileSync("data.json");
+  return JSON.parse(rawData);
+}
+
+function writeData(data) {
+  const newData = JSON.stringify(data);
+  fs.writeFileSync("data.json", newData);
+}
+
 function updateAux(isRider, req, res) {
   // Check if the location is valid
   if (rideLocations.includes(req.body.text)) {
     // Read the data.json file and parse it into a JSON object
-    const rawData = fs.readFileSync("data.json");
-    let data = JSON.parse(rawData);
+    let data = readData();
 
     // If the user is already in the data.json file, update the location;
     // otherwise, add the user & location to the data.json file
@@ -47,8 +48,7 @@ function updateAux(isRider, req, res) {
     }
 
     // Write the updated data to the data.json file
-    const newData = JSON.stringify(data);
-    fs.writeFileSync("data.json", newData);
+    writeData(data);
 
     res.send(
       `Successfully confirmed: ${req.body.user_name} => ${req.body.text}`
@@ -68,8 +68,7 @@ app.post("/update/driver", (req, res) => {
 
 app.post("/delete/driver", (req, res) => {
   // Read the data.json file and parse it into a JSON object
-  const rawData = fs.readFileSync("data.json");
-  let data = JSON.parse(rawData);
+  let data = readData();
 
   // Delete the driver from the data.json file
   const userId = req.body.user_id;
@@ -82,20 +81,38 @@ app.post("/delete/driver", (req, res) => {
     drivers.splice(index, 1);
 
     // Write the updated data to the data.json file
-    const newData = JSON.stringify(data);
-    fs.writeFileSync("data.json", newData);
+    writeData(data);
 
     res.send(`Successfully deleted: ${req.body.user_name}`);
   }
+});
+
+app.post("/generate_assignments", (req, res) => {
+  let data = readData();
+
+  const config = {
+    headers: { Authorization: `Bearer ${botToken}` },
+    params: {
+      channel: "C040PS45KBJ",
+      timestamp: data.ts,
+    },
+  };
+  axios.get("https://slack.com/api/reactions.get", config);
 });
 
 app.post("/events", (req, res) => {
   res.send(req.body.challenge);
   res.end();
 
+  // Looks like I don't need to use the Events API because I can just
+  // read all the reactions on the target message at a specific time.
+  // Will leave this here for now.
   // switch (req.body.type) {
   //   case "reaction_added":
-
+  //     let data = readData();
+  //     if (data.ts === req.body.event_ts) {
+  //       ...
+  //     }
   // }
 });
 
@@ -109,7 +126,15 @@ app.get("/send/test", (req, res) => {
   const config = {
     headers: { Authorization: `Bearer ${botToken}` },
   };
-  axios.post("https://slack.com/api/chat.postMessage", message, config);
+
+  axios
+    .post("https://slack.com/api/chat.postMessage", message, config)
+    .then((messageRes) => {
+      res.send(messageRes.ts);
+      let data = readData();
+      data.ts = messageRes.ts;
+      writeData(data);
+    });
 
   res.send("Message sent!");
 });

@@ -3,7 +3,8 @@
     {
       "id": "ABCDE52323",
       "name": "David Kim",
-      "location": "collegetown"
+      "location": "collegetown",
+      "maxPassengers": 4
     }
   ],
   "riders": [
@@ -12,5 +13,6 @@
       "name": "Andrew Pei",
       "location": "collegetown"
     }
-  ]
+  ],
+  "ts": ""
 }
