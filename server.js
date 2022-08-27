@@ -92,6 +92,26 @@ app.get("/latest_ts", (req, res) => {
   res.send(data.ts);
 });
 
+function shuffle(array) {
+  let currentIndex = array.length,
+    randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex != 0) {
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
+}
+
 app.post("/generate_assignments", (req, res) => {
   let data = readData();
 
@@ -121,6 +141,9 @@ app.post("/generate_assignments", (req, res) => {
         }
 
         for (const userId of usersWhoReactedUniq) {
+          // Introduce randomness to the assignment process
+          shuffle(data.drivers);
+
           const rider = data.riders.find((rdr) => rdr.id === userId);
           if (rider) {
             const driver = data.drivers.find(
