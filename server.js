@@ -52,7 +52,7 @@ function writeData(data) {
     headers: {
       "X-Master-Key":
         "$2b$10$.XzRnzXNCixKoIlMhzODn.0zZ.8qL7nxk5x.f4W0g7hWYjziW0Hl6",
-      "Conte-Type": "application/json",
+      "Content-Type": "application/json",
     },
   };
   axios.put(
