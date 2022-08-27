@@ -1,0 +1,16 @@
+{
+  "drivers": [
+    {
+      "id": "ABCDE52323",
+      "name": "David Kim",
+      "location": "collegetown"
+    }
+  ],
+  "riders": [
+    {
+      "id": "ABCDE12345",
+      "name": "Andrew Pei",
+      "location": "collegetown"
+    }
+  ]
+}
