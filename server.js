@@ -111,6 +111,7 @@ app.post("/generate_assignments", (req, res) => {
       const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
 
       let driverRiderMap = {};
+      let ridersWithoutDriver = [];
       for (const driver of data.drivers) {
         driverRiderMap[driver.name] = [];
       }
@@ -125,6 +126,9 @@ app.post("/generate_assignments", (req, res) => {
           );
           if (driver) {
             driverRiderMap[driver.name].push(rider.name);
+          } else {
+            ridersWithoutDriver.push(rider.name);
+            console.log(`No driver found for ${rider.name}`);
           }
         }
       }
@@ -133,7 +137,11 @@ app.post("/generate_assignments", (req, res) => {
           return `${driver} => ${riders.join(", ")}`;
         }
       );
-      res.send(assignments.join("\n"));
+      res.send(
+        `${assignments.join(
+          "\n"
+        )}\n\nUnassigned riders: ${ridersWithoutDriver.join("\n")}`
+      );
     })
     .catch((error) => {
       console.log(error);
