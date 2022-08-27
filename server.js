@@ -50,6 +50,9 @@ function updateAux(isRider, req, res) {
     if (riderIds.includes(userId)) {
       const index = riderIds.indexOf(userId);
       riderOrDriverArray[index].location = location;
+      if (!isRider) {
+        riderOrDriverArray[index].maxPassengers = maxPassengers;
+      }
     } else {
       riderOrDriverArray.push({
         id: userId,
