@@ -1,0 +1,71 @@
+{
+  "drivers": [
+    {
+      "id": "a",
+      "name": "David Kim",
+      "location": "collegetown",
+      "maxPassengers": 2
+    },
+    {
+      "id": "b",
+      "name": "John Doe",
+      "location": "collegetown",
+      "maxPassengers": 1
+    },
+    {
+      "id": "c",
+      "name": "Jane Doe",
+      "location": "north",
+      "maxPassengers": 2
+    },
+    {
+      "id": "d",
+      "name": "John Do",
+      "location": "west",
+      "maxPassengers": 2
+    }
+  ],
+  "riders": [
+    {
+      "id": "e",
+      "name": "Andrew Pei",
+      "location": "collegetown"
+    },
+    {
+      "id": "f",
+      "name": "Andrew 2",
+      "location": "west"
+    },
+    {
+      "id": "g",
+      "name": "Andrew 3",
+      "location": "collegetown"
+    },
+    {
+      "id": "h",
+      "name": "Andrew 4",
+      "location": "north"
+    },
+    {
+      "id": "i",
+      "name": "Andrew 5",
+      "location": "west"
+    },
+    {
+      "id": "j",
+      "name": "Andrew 6",
+      "location": "north"
+    },
+    {
+      "id": "k",
+      "name": "Andrew 7",
+      "location": "collegetown"
+    },
+    {
+      "id": "l",
+      "name": "Sad Andrew",
+      "location": "collegetown"
+    }
+  ],
+  "ts": ""
+}

@@ -6,10 +6,11 @@ const bodyParser = require("body-parser");
 const app = express();
 const port = process.env.PORT || 3000;
 
-// app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
+// const publishedChannel = "CTEJU34FN"; // #prayermeeting
+const publishedChannel = "C040PS45KBJ"; // #bot-test
 
 const rideLocations = ["north", "west", "collegetown"];
 
@@ -129,7 +130,7 @@ app.post("/generate_assignments", (req, res) => {
   const config = {
     headers: { Authorization: `Bearer ${botToken}` },
     params: {
-      channel: "C040PS45KBJ",
+      channel: publishedChannel,
       timestamp: data.ts,
     },
   };
@@ -142,8 +143,8 @@ app.post("/generate_assignments", (req, res) => {
         res.send("No one reacted to the message.");
       } else {
         const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
-        // const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
-        const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k", "l"];
+        const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
+        // const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k", "l"];
 
         let driverRiderMap = {};
         let ridersWithoutDriver = [];
@@ -185,7 +186,7 @@ app.post("/generate_assignments", (req, res) => {
           headers: { Authorization: `Bearer ${botToken}` },
         };
         const message = {
-          channel: "C040PS45KBJ",
+          channel: publishedChannel,
           text: assignmentsStr,
         };
         axios.post("https://slack.com/api/chat.postMessage", message, config);
@@ -212,8 +213,7 @@ app.post("/events", (req, res) => {
   // }
 });
 
-// Send a message to the #prayermeeting channel (CTEJU34FN)
-// #bot-test channel (C040PS45KBJ)
+// Send a message to the #bot-test channel (C040PS45KBJ)
 app.get("/send/test", (req, res) => {
   const message = {
     channel: "C040PS45KBJ",
@@ -244,7 +244,7 @@ function sendDailyReminderMessage(req, res) {
     .join("/");
 
   const message = {
-    channel: "C040PS45KBJ",
+    channel: publishedChannel,
     text: `<!channel> If you would like a ride to EMP tmrw (${tomorrowStr}), please react to this message :) beep boop`,
   };
   const config = {
