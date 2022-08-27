@@ -6,6 +6,8 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
+const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
+
 // app.set("etag", false);
 // app.use(function (req, res, next) {
 //   // Delete all headers related to cache
@@ -94,6 +96,16 @@ app.post("/events", (req, res) => {
   //   case "reaction_added":
 
   // }
+});
+
+// Send a message to the #prayermeeting channel (CTEJU34FN)
+// #bot-test channel (C040PS45KBJ)
+app.get("/send/test", (req, res) => {
+  res.send({
+    token: botToken,
+    channel: "C040PS45KBJ",
+    text: "Hello World!",
+  });
 });
 
 app.listen(port, () => {
