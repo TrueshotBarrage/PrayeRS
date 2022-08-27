@@ -215,6 +215,34 @@ app.get("/send/test", (req, res) => {
   axios.post("https://slack.com/api/chat.postMessage", message, config).then(
     (messageRes) => {
       res.send(messageRes.data.ts);
+    },
+    (error) => {
+      res.send(error);
+    }
+  );
+});
+
+function sendDailyReminderMessage(req, res) {
+  // Compute tomorrow's date
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow
+    .toLocaleDateString()
+    .split("/")
+    .slice(0, 2)
+    .join("/");
+
+  const message = {
+    channel: "C040PS45KBJ",
+    text: `@channel If you would like a ride to EMP tmrw (${tomorrowStr}), please react to this message :) beep boop`,
+  };
+  const config = {
+    headers: { Authorization: `Bearer ${botToken}` },
+  };
+
+  axios.post("https://slack.com/api/chat.postMessage", message, config).then(
+    (messageRes) => {
+      res.send(messageRes.data.ts);
       console.log(messageRes.data.ts);
 
       let data = readData();
@@ -226,6 +254,11 @@ app.get("/send/test", (req, res) => {
       res.send(error);
     }
   );
+}
+
+// Send a message to the #prayermeeting channel (CTEJU34FN)
+app.get("/send/daily", (req, res) => {
+  sendDailyReminderMessage(req, res);
 });
 
 app.listen(port, () => {
