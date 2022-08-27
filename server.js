@@ -134,12 +134,11 @@ app.get("/send/test", (req, res) => {
 
   axios.post("https://slack.com/api/chat.postMessage", message, config).then(
     (messageRes) => {
-      console.log(messageRes);
-      res.send(messageRes.body.ts);
-      console.log(messageRes.body.ts);
+      res.send(messageRes.data.ts);
+      console.log(messageRes.data.ts);
 
       let data = readData();
-      data.ts = messageRes.body.ts;
+      data.ts = messageRes.data.ts;
       writeData(data);
       console.log(data);
     },
