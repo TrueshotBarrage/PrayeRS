@@ -23,19 +23,21 @@ app.get("/", (req, res) => {
 //   return JSON.parse(rawData);
 // }
 
-async function readData() {
+function readData() {
   config = {
     headers: {
       "X-Master-Key":
         "$2b$10$.XzRnzXNCixKoIlMhzODn.0zZ.8qL7nxk5x.f4W0g7hWYjziW0Hl6",
     },
   };
-  const res = await axios.get(
-    "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
-    config
-  );
-  const record = await res.body.record;
-  return await JSON.parse(record);
+  axios
+    .get("https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917", config)
+    .then((response) => {
+      return JSON.parse(response.data.record);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 }
 
 // function writeData(data) {
@@ -53,7 +55,7 @@ async function writeData(data) {
       "Conte-Type": "application/json",
     },
   };
-  const res = await axios.put(
+  axios.put(
     "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
     newData,
     config
