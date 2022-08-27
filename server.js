@@ -317,7 +317,7 @@ async function sendDailyReminderMessage(req, res) {
   };
 
   axios.post("https://slack.com/api/chat.postMessage", message, config).then(
-    (messageRes) => {
+    async (messageRes) => {
       res.send(messageRes.data.ts);
       console.log(messageRes.data.ts);
 
