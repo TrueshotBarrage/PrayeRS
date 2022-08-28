@@ -211,7 +211,20 @@ app.post("/generate_assignments", async (req, res) => {
       } else {
         const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
         // const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
-        const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k", "l"];
+        const usersWhoReactedUniq = [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+        ];
 
         let driverRiderMap = {};
         let ridersWithoutDriver = [];
@@ -223,7 +236,7 @@ app.post("/generate_assignments", async (req, res) => {
           }
         }
         let driverRiderMapClone = { ...driverRiderMap };
-        let noOptimalAssignmentExists = true;
+        let noOptimalAssignmentExists = false;
 
         // Assign riders to drivers - try to match riders' preferred locations
         for (const userId of usersWhoReactedUniq) {
@@ -280,7 +293,7 @@ app.post("/generate_assignments", async (req, res) => {
                 } else {
                   ridersWithoutDriver.push(rider.name);
                   console.log(`No driver found for ${rider.name}`);
-                  noOptimalAssignmentExists = false;
+                  noOptimalAssignmentExists = true;
                 }
               }
             }
