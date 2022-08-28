@@ -263,7 +263,7 @@ app.post("/generate_assignments", async (req, res) => {
         if (ridersWithoutDriver.length > 0) {
           // Clear the previous assignments and start over
           driverRiderMap = { ...driverRiderMapClone };
-          let ridersWithoutDriverClone = [...ridersWithoutDriver];
+          var ridersWithoutDriverClone = [...ridersWithoutDriver];
           ridersWithoutDriver.length = 0;
 
           // Sort the riders by their preferred location
