@@ -263,6 +263,8 @@ app.post("/generate_assignments", async (req, res) => {
         if (ridersWithoutDriver.length > 0) {
           // Clear the previous assignments and start over
           driverRiderMap = { ...driverRiderMapClone };
+          console.log("!!!!!Redoing the assignment process...!!!!!!!");
+          console.log(driverRiderMap);
           var ridersWithoutDriverClone = [...ridersWithoutDriver];
           ridersWithoutDriver.length = 0;
 
@@ -311,7 +313,7 @@ app.post("/generate_assignments", async (req, res) => {
           );
           assignments2Str = `${assignments2.join(
             "\n"
-          )}\n\nUnassigned riders:\n${ridersWithoutDriverClone.join("\n")}`;
+          )}\n\nUnassigned riders:\n${ridersWithoutDriver.join("\n")}`;
         }
 
         const assignments = Object.entries(driverRiderMap).map(
@@ -321,7 +323,7 @@ app.post("/generate_assignments", async (req, res) => {
         );
         const assignmentsStr = `Option 1:\n${assignments.join(
           "\n"
-        )}\n\nUnassigned riders:\n${ridersWithoutDriver.join(
+        )}\n\nUnassigned riders:\n${ridersWithoutDriverClone.join(
           "\n"
         )}\n\nOption 2:\n${assignments2Str}`;
         res.send(assignmentsStr);
