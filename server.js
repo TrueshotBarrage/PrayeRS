@@ -52,7 +52,7 @@ function writeData(data) {
   config = {
     headers: {
       "X-Master-Key":
-        "$2b$10$.XzRnzXNCixKoIlMhzODn.0zZ.8qL7nxk5x.f4W0g7hWYjziW0Hl6",
+        "$2b$10$r0521y/gY6h7m8iPZprhf.URBBG3nnCyIeNuaLPlUvlFpboTi8BjG",
       "Content-Type": "application/json",
     },
   };
