@@ -31,7 +31,8 @@ async function readData() {
     },
   };
   return await axios
-    .get("https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917", config)
+    .get("https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be", config)
+    // .get("https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917", config)
     .then((response) => {
       return response.data.record;
     })
@@ -56,7 +57,8 @@ function writeData(data) {
     },
   };
   axios.put(
-    "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
+    "https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be",
+    // "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
     newData,
     config
   );
@@ -208,8 +210,8 @@ app.post("/generate_assignments", async (req, res) => {
         res.send("No one reacted to the message.");
       } else {
         const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
-        const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
-        // const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k", "l"];
+        // const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
+        const usersWhoReactedUniq = ["e", "f", "g", "h", "i", "j", "k", "l"];
 
         let driverRiderMap = {};
         let ridersWithoutDriver = [];
@@ -221,6 +223,7 @@ app.post("/generate_assignments", async (req, res) => {
           }
         }
         let driverRiderMapClone = { ...driverRiderMap };
+        let noOptimalAssignmentExists = true;
 
         // Assign riders to drivers - try to match riders' preferred locations
         for (const userId of usersWhoReactedUniq) {
@@ -247,6 +250,7 @@ app.post("/generate_assignments", async (req, res) => {
         if (ridersWithoutDriver.length > 0) {
           // Clear the previous assignments and start over
           driverRiderMap = { ...driverRiderMapClone };
+          let ridersWithoutDriverClone = [...ridersWithoutDriver];
           ridersWithoutDriver.length = 0;
 
           // Sort the riders by their preferred location
@@ -276,10 +280,25 @@ app.post("/generate_assignments", async (req, res) => {
                 } else {
                   ridersWithoutDriver.push(rider.name);
                   console.log(`No driver found for ${rider.name}`);
+                  noOptimalAssignmentExists = false;
                 }
               }
             }
           }
+        }
+
+        let assignments2;
+        let assignments2Str = "";
+        if (noOptimalAssignmentExists) {
+          // Send both assignments as options
+          assignments2 = Object.entries(driverRiderMapClone).map(
+            ([driver, riders]) => {
+              return `${driver} => ${riders.join(", ")}`;
+            }
+          );
+          assignments2Str = `${assignments2.join(
+            "\n"
+          )}\n\nUnassigned riders:\n${ridersWithoutDriverClone.join("\n")}`;
         }
 
         const assignments = Object.entries(driverRiderMap).map(
@@ -287,9 +306,11 @@ app.post("/generate_assignments", async (req, res) => {
             return `${driver} => ${riders.join(", ")}`;
           }
         );
-        const assignmentsStr = `${assignments.join(
+        const assignmentsStr = `Option 1:\n${assignments.join(
           "\n"
-        )}\n\nUnassigned riders:\n${ridersWithoutDriver.join("\n")}`;
+        )}\n\nUnassigned riders:\n${ridersWithoutDriver.join(
+          "\n"
+        )}\n\nOption 2:\n${assignments2Str}`;
         res.send(assignmentsStr);
 
         // Write the message to the Slack channel
