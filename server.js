@@ -266,7 +266,7 @@ app.post("/generate_assignments", async (req, res) => {
           driverRiderMap = { ...driverRiderMapClone };
           console.log("!!!!!Redoing the assignment process...!!!!!!!");
           console.log(driverRiderMap);
-          var ridersWithoutDriverClone = Arrays.from(ridersWithoutDriver);
+          var ridersWithoutDriverClone = Array.from(ridersWithoutDriver);
           console.log(ridersWithoutDriverClone);
           ridersWithoutDriver.length = 0;
 
