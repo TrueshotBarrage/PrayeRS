@@ -1,5 +1,5 @@
 const express = require("express");
-const fs = require("fs");
+// const fs = require("fs");
 const axios = require("axios");
 const bodyParser = require("body-parser");
 
@@ -27,7 +27,7 @@ async function readData() {
   config = {
     headers: {
       "X-Master-Key":
-        "$2b$10$.XzRnzXNCixKoIlMhzODn.0zZ.8qL7nxk5x.f4W0g7hWYjziW0Hl6",
+        "$2b$10$r0521y/gY6h7m8iPZprhf.URBBG3nnCyIeNuaLPlUvlFpboTi8BjG",
     },
   };
   return await axios
@@ -213,17 +213,23 @@ app.post("/generate_assignments", async (req, res) => {
 
         let driverRiderMap = {};
         let ridersWithoutDriver = [];
+        let availableDrivers = [];
         for (const driver of data.drivers) {
-          driverRiderMap[driver.name] = [];
+          if (usersWhoReactedUniq.includes(driver.id)) {
+            driverRiderMap[driver.name] = [];
+            availableDrivers.push(driver);
+          }
         }
+        let driverRiderMapClone = { ...driverRiderMap };
 
+        // Assign riders to drivers - try to match riders' preferred locations
         for (const userId of usersWhoReactedUniq) {
           // Introduce randomness to the assignment process
           shuffle(data.drivers);
 
           const rider = data.riders.find((rdr) => rdr.id === userId);
           if (rider) {
-            const driver = data.drivers.find(
+            const driver = availableDrivers.find(
               (drv) =>
                 drv.location === rider.location &&
                 drv.maxPassengers - driverRiderMap[drv.name].length > 0
@@ -236,6 +242,46 @@ app.post("/generate_assignments", async (req, res) => {
             }
           }
         }
+
+        // Redo the assignment process if there are any riders without a driver
+        if (ridersWithoutDriver.length > 0) {
+          // Clear the previous assignments and start over
+          driverRiderMap = { ...driverRiderMapClone };
+          ridersWithoutDriver.length = 0;
+
+          // Sort the riders by their preferred location
+          data.riders.sort((a, b) => {
+            a.location > b.location ? 1 : -1;
+          });
+
+          for (const userId of usersWhoReactedUniq) {
+            const rider = data.riders.find((rdr) => rdr.id === userId);
+            if (rider) {
+              const driver = availableDrivers.find(
+                (drv) =>
+                  drv.location === rider.location &&
+                  drv.maxPassengers - driverRiderMap[drv.name].length > 0
+              );
+              if (driver) {
+                driverRiderMap[driver.name].push(rider.name);
+              } else {
+                const driverForAnotherLocation = availableDrivers.find(
+                  (drv) =>
+                    drv.maxPassengers - driverRiderMap[drv.name].length > 0
+                );
+                if (driverForAnotherLocation) {
+                  driverRiderMap[driverForAnotherLocation.name].push(
+                    rider.name
+                  );
+                } else {
+                  ridersWithoutDriver.push(rider.name);
+                  console.log(`No driver found for ${rider.name}`);
+                }
+              }
+            }
+          }
+        }
+
         const assignments = Object.entries(driverRiderMap).map(
           ([driver, riders]) => {
             return `${driver} => ${riders.join(", ")}`;
@@ -243,7 +289,7 @@ app.post("/generate_assignments", async (req, res) => {
         );
         const assignmentsStr = `${assignments.join(
           "\n"
-        )}\n\nUnassigned riders: ${ridersWithoutDriver.join("\n")}`;
+        )}\n\nUnassigned riders:\n${ridersWithoutDriver.join("\n")}`;
         res.send(assignmentsStr);
 
         // Write the message to the Slack channel
