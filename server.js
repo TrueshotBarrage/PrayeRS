@@ -227,15 +227,16 @@ app.post("/generate_assignments", async (req, res) => {
         ];
 
         let driverRiderMap = {};
+        let driverRiderMapClone = {};
         let ridersWithoutDriver = [];
         let availableDrivers = [];
         for (const driver of data.drivers) {
           if (usersWhoReactedUniq.includes(driver.id)) {
             driverRiderMap[driver.name] = [];
+            driverRiderMapClone[driver.name] = [];
             availableDrivers.push(driver);
           }
         }
-        let driverRiderMapClone = { ...driverRiderMap };
         let noOptimalAssignmentExists = false;
 
         // Assign riders to drivers - try to match riders' preferred locations
