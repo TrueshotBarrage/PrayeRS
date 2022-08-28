@@ -266,7 +266,8 @@ app.post("/generate_assignments", async (req, res) => {
           driverRiderMap = { ...driverRiderMapClone };
           console.log("!!!!!Redoing the assignment process...!!!!!!!");
           console.log(driverRiderMap);
-          var ridersWithoutDriverClone = [...ridersWithoutDriver];
+          var ridersWithoutDriverClone = Arrays.from(ridersWithoutDriver);
+          console.log(ridersWithoutDriverClone);
           ridersWithoutDriver.length = 0;
 
           // Sort the riders by their preferred location
@@ -322,11 +323,13 @@ app.post("/generate_assignments", async (req, res) => {
             return `${driver} => ${riders.join(", ")}`;
           }
         );
-        const assignmentsStr = `Option 1:\n${assignments.join(
+        const assignmentsStr = `${
+          noOptimalAssignmentExists ? "Option 1:\n" : ""
+        }${assignments.join(
           "\n"
-        )}\n\nUnassigned riders:\n${ridersWithoutDriverClone.join(
-          "\n"
-        )}\n\nOption 2:\n${assignments2Str}`;
+        )}\n\nUnassigned riders:\n${ridersWithoutDriverClone.join("\n")}${
+          noOptimalAssignmentExists ? "\n\nOption 2:\n" : ""
+        }${assignments2Str}`;
         res.send(assignmentsStr);
 
         // Write the message to the Slack channel
