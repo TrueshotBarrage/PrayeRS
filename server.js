@@ -289,11 +289,10 @@ app.post("/generate_assignments", async (req, res) => {
                     drv.maxPassengers - driverRiderMap2[drv.name].length > 0
                 );
                 if (driverForAnotherLocation) {
-                  const displayedLoc = ((string) => {
+                  const displayedLoc = (string) =>
                     string.charAt(0).toUpperCase() + string.slice(1);
-                  })(rider.location);
                   driverRiderMap2[driverForAnotherLocation.name].push(
-                    `${rider.name} (${displayedLoc})`
+                    `${rider.name} (${displayedLoc(rider.location)})`
                   );
                 } else {
                   ridersWithoutDriver2.push(rider.name);
@@ -342,6 +341,7 @@ app.post("/generate_assignments", async (req, res) => {
         if (noOptimalAssignmentExists) {
           res.send(assignmentsStr);
         } else {
+          res.send("Successfully generated assignments!");
           // Write the message to the Slack channel
           const config = {
             headers: { Authorization: `Bearer ${botToken}` },
