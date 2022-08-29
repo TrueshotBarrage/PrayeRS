@@ -227,16 +227,18 @@ app.post("/generate_assignments", async (req, res) => {
         ];
 
         let driverRiderMap = {};
-        let driverRiderMapClone = {};
+        let driverRiderMap2 = {};
         let ridersWithoutDriver = [];
+        let ridersWithoutDriver2 = [];
         let availableDrivers = [];
         for (const driver of data.drivers) {
           if (usersWhoReactedUniq.includes(driver.id)) {
             driverRiderMap[driver.name] = [];
-            driverRiderMapClone[driver.name] = [];
+            driverRiderMap2[driver.name] = [];
             availableDrivers.push(driver);
           }
         }
+        let noIdealAssignmentExists = false;
         let noOptimalAssignmentExists = false;
 
         // Assign riders to drivers - try to match riders' preferred locations
@@ -262,13 +264,9 @@ app.post("/generate_assignments", async (req, res) => {
 
         // Redo the assignment process if there are any riders without a driver
         if (ridersWithoutDriver.length > 0) {
-          // Clear the previous assignments and start over
-          driverRiderMap = { ...driverRiderMapClone };
+          // Try a non-ideal, but still optimal (possible), assignment
           console.log("!!!!!Redoing the assignment process...!!!!!!!");
-          console.log(driverRiderMap);
-          var ridersWithoutDriverClone = Array.from(ridersWithoutDriver);
-          console.log(ridersWithoutDriverClone);
-          ridersWithoutDriver.length = 0;
+          noIdealAssignmentExists = true;
 
           // Sort the riders by their preferred location
           data.riders.sort((a, b) => {
@@ -281,21 +279,21 @@ app.post("/generate_assignments", async (req, res) => {
               const driver = availableDrivers.find(
                 (drv) =>
                   drv.location === rider.location &&
-                  drv.maxPassengers - driverRiderMap[drv.name].length > 0
+                  drv.maxPassengers - driverRiderMap2[drv.name].length > 0
               );
               if (driver) {
-                driverRiderMap[driver.name].push(rider.name);
+                driverRiderMap2[driver.name].push(rider.name);
               } else {
                 const driverForAnotherLocation = availableDrivers.find(
                   (drv) =>
-                    drv.maxPassengers - driverRiderMap[drv.name].length > 0
+                    drv.maxPassengers - driverRiderMap2[drv.name].length > 0
                 );
                 if (driverForAnotherLocation) {
-                  driverRiderMap[driverForAnotherLocation.name].push(
+                  driverRiderMap2[driverForAnotherLocation.name].push(
                     rider.name
                   );
                 } else {
-                  ridersWithoutDriver.push(rider.name);
+                  ridersWithoutDriver2.push(rider.name);
                   console.log(`No driver found for ${rider.name}`);
                   noOptimalAssignmentExists = true;
                 }
@@ -308,26 +306,28 @@ app.post("/generate_assignments", async (req, res) => {
         let assignments2Str = "";
         if (noOptimalAssignmentExists) {
           // Send both assignments as options
-          assignments2 = Object.entries(driverRiderMapClone).map(
+          assignments2 = Object.entries(driverRiderMap2).map(
             ([driver, riders]) => {
               return `${driver} => ${riders.join(", ")}`;
             }
           );
           assignments2Str = `${assignments2.join(
             "\n"
-          )}\n\nUnassigned riders:\n${ridersWithoutDriver.join("\n")}`;
+          )}\n\nUnassigned riders:\n${ridersWithoutDriver2.join("\n")}`;
         }
 
-        const assignments = Object.entries(driverRiderMap).map(
-          ([driver, riders]) => {
-            return `${driver} => ${riders.join(", ")}`;
-          }
-        );
+        const assignments = Object.entries(
+          noIdealAssignmentExists && !noOptimalAssignmentExists
+            ? driverRiderMap2
+            : driverRiderMap
+        ).map(([driver, riders]) => {
+          return `${driver} => ${riders.join(", ")}`;
+        });
         const assignmentsStr = `${
           noOptimalAssignmentExists ? "Option 1:\n" : ""
         }${assignments.join(
           "\n"
-        )}\n\nUnassigned riders:\n${ridersWithoutDriverClone.join("\n")}${
+        )}\n\nUnassigned riders:\n${ridersWithoutDriver2.join("\n")}${
           noOptimalAssignmentExists ? "\n\nOption 2:\n" : ""
         }${assignments2Str}`;
         res.send(assignmentsStr);
