@@ -3,26 +3,50 @@ const express = require("express");
 const axios = require("axios");
 const bodyParser = require("body-parser");
 
+// Create a new express application and expose the port assigned on Heroku
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Get the correct Content-Type encoding for the body
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Hardcoded for now because I don't care about security in this project
 const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
-const publishedChannel = "CTEJU34FN"; // #prayermeeting
-// const publishedChannel = "C040PS45KBJ"; // #bot-test
 
+// Set this to true if production-ready instead of debugging
+const prod = true;
+
+// Slack channel IDs in the Emmaus Road workspace
+let publishedChannel;
+let dataBinURL;
+if (prod) {
+  publishedChannel = "CTEJU34FN"; // #prayermeeting
+  dataBinURL = "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917"; // data.json
+} else {
+  publishedChannel = "C040PS45KBJ"; // #bot-test
+  dataBinURL = "https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be"; // example_data.json
+}
+
+// Valid ride locations
 const rideLocations = ["north", "west", "collegetown"];
 
+// Test (default) route
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+// Deprecated; Heroku's filesystem is ephermeral so this won't do
 // function readData() {
 //   const rawData = fs.readFileSync("data.json");
 //   return JSON.parse(rawData);
 // }
 
+// function writeData(data) {
+//   const newData = JSON.stringify(data);
+//   fs.writeFileSync("data.json", newData);
+// }
+
+// Read the data.json file on jsonbin.io
 async function readData() {
   config = {
     headers: {
@@ -30,9 +54,11 @@ async function readData() {
         "$2b$10$r0521y/gY6h7m8iPZprhf.URBBG3nnCyIeNuaLPlUvlFpboTi8BjG",
     },
   };
+
+  console.log(dataBinURL);
+
   return await axios
-    // .get("https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be", config)
-    .get("https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917", config)
+    .get(dataBinURL, config)
     .then((response) => {
       return response.data.record;
     })
@@ -41,11 +67,7 @@ async function readData() {
     });
 }
 
-// function writeData(data) {
-//   const newData = JSON.stringify(data);
-//   fs.writeFileSync("data.json", newData);
-// }
-
+// Write to the data.json file on jsonbin.io
 function writeData(data) {
   const newData = JSON.stringify(data);
 
@@ -56,14 +78,10 @@ function writeData(data) {
       "Content-Type": "application/json",
     },
   };
-  axios.put(
-    // "https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be",
-    "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
-    newData,
-    config
-  );
+  axios.put(dataBinURL, newData, config);
 }
 
+// Fetch and parse the user's public name on Slack; use display name if available
 function readUsername(userId) {
   const config = {
     headers: { Authorization: `Bearer ${botToken}` },
@@ -83,6 +101,7 @@ function readUsername(userId) {
   });
 }
 
+// Auxilliary function to update rider or driver info in the data.json file
 async function updateAux(isRider, req, res) {
   console.log(req);
   const text = req.body.text.toLowerCase().split(" ");
@@ -104,7 +123,10 @@ async function updateAux(isRider, req, res) {
     readUsername(userId).then((username) => {
       const userName = username;
 
+      // Find the rider or driver in the array
       const riderIds = riderOrDriverArray.map((rider) => rider.id);
+
+      // If the rider/driver is already in the array, update the location
       if (riderIds.includes(userId)) {
         const index = riderIds.indexOf(userId);
         riderOrDriverArray[index].location = location;
@@ -112,6 +134,7 @@ async function updateAux(isRider, req, res) {
           riderOrDriverArray[index].maxPassengers = maxPassengers;
         }
       } else {
+        // Otherwise, add the rider/driver to the array
         riderOrDriverArray.push({
           id: userId,
           name: userName,
@@ -137,14 +160,17 @@ async function updateAux(isRider, req, res) {
   }
 }
 
+// Update or create the rider in the data.json file
 app.post("/update/rider", async (req, res) => {
   await updateAux(true, req, res);
 });
 
+// Update or create the driver in the data.json file
 app.post("/update/driver", async (req, res) => {
   await updateAux(false, req, res);
 });
 
+// Delete the rider from the data.json file
 app.post("/delete/driver", async (req, res) => {
   // Read the data.json file and parse it into a JSON object
   let data = await readData();
@@ -166,11 +192,13 @@ app.post("/delete/driver", async (req, res) => {
   }
 });
 
+// Fetch the latest version of the data.json file from the server
 app.get("/latest_data", async (req, res) => {
   const data = await readData();
   res.send(data);
 });
 
+// Shuffle an array
 function shuffle(array) {
   let currentIndex = array.length,
     randomIndex;
@@ -191,6 +219,7 @@ function shuffle(array) {
   return array;
 }
 
+// Generate driver-rider assignments
 app.post("/generate_assignments", async (req, res) => {
   let data = await readData();
 
@@ -209,23 +238,27 @@ app.post("/generate_assignments", async (req, res) => {
       if (!rxns) {
         res.send("No one reacted to the message.");
       } else {
-        const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
-        const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
-        // const usersWhoReactedUniq = [
-        //   "a",
-        //   "b",
-        //   "c",
-        //   "d",
-        //   "e",
-        //   "f",
-        //   "g",
-        //   "h",
-        //   "i",
-        //   "j",
-        //   "k",
-        //   "l",
-        // ];
+        if (prod) {
+          var usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
+          var usersWhoReactedUniq = [...new Set(usersWhoReacted)];
+        } else {
+          var usersWhoReactedUniq = [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f",
+            "g",
+            "h",
+            "i",
+            "j",
+            "k",
+            "l",
+          ];
+        }
 
+        // Initialize the data structures
         let driverRiderMap = {};
         let driverRiderMap2 = {};
         let ridersWithoutDriver = [];
@@ -246,16 +279,20 @@ app.post("/generate_assignments", async (req, res) => {
           // Introduce randomness to the assignment process
           shuffle(data.drivers);
 
+          // Find the rider info from the list of users who reacted to the post
           const rider = data.riders.find((rdr) => rdr.id === userId);
           if (rider) {
+            // Match the rider to a driver based on capacity and location
             const driver = availableDrivers.find(
               (drv) =>
                 drv.location === rider.location &&
                 drv.maxPassengers - driverRiderMap[drv.name].length > 0
             );
+            // Possible driver was found
             if (driver) {
               driverRiderMap[driver.name].push(rider.name);
             } else {
+              // No driver possible
               ridersWithoutDriver.push(rider.name);
               console.log(`No driver found for ${rider.name}`);
             }
@@ -273,6 +310,7 @@ app.post("/generate_assignments", async (req, res) => {
             a.location > b.location ? 1 : -1;
           });
 
+          // Same process as above, but with a twist
           for (const userId of usersWhoReactedUniq) {
             const rider = data.riders.find((rdr) => rdr.id === userId);
             if (rider) {
@@ -284,17 +322,20 @@ app.post("/generate_assignments", async (req, res) => {
               if (driver) {
                 driverRiderMap2[driver.name].push(rider.name);
               } else {
+                // The twist: find a driver with capacity, but don't care about location
                 const driverForAnotherLocation = availableDrivers.find(
                   (drv) =>
                     drv.maxPassengers - driverRiderMap2[drv.name].length > 0
                 );
                 if (driverForAnotherLocation) {
+                  // Display the new location so the driver knows
                   const displayedLoc = (string) =>
                     string.charAt(0).toUpperCase() + string.slice(1);
                   driverRiderMap2[driverForAnotherLocation.name].push(
                     `${rider.name} (${displayedLoc(rider.location)})`
                   );
                 } else {
+                  // We're out of luck - not possible to assign this rider
                   ridersWithoutDriver2.push(rider.name);
                   console.log(`No driver found for ${rider.name}`);
                   noOptimalAssignmentExists = true;
@@ -304,6 +345,7 @@ app.post("/generate_assignments", async (req, res) => {
           }
         }
 
+        // Display the results in string format
         let assignments2;
         let assignments2Str = "";
         if (noOptimalAssignmentExists) {
@@ -359,6 +401,7 @@ app.post("/generate_assignments", async (req, res) => {
     });
 });
 
+// Slack Events API handler
 app.post("/events", async (req, res) => {
   res.send(req.body.challenge);
   res.end();
@@ -395,6 +438,7 @@ app.get("/send/test/:text", (req, res) => {
   );
 });
 
+// Send the daily reminder announcement to the Slack channel
 async function sendDailyReminderMessage(req, res) {
   // Compute tomorrow's date
   const tomorrow = new Date();
