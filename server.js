@@ -324,16 +324,22 @@ app.post("/generate_assignments", async (req, res) => {
           return `${driver} => ${riders.join(", ")}`;
         });
         const assignmentsStr = `${
-          noOptimalAssignmentExists ? "Option 1:\n" : ""
-        }${assignments.join(
-          "\n"
-        )}\n\nUnassigned riders:\n${ridersWithoutDriver.join("\n")}${
+          noOptimalAssignmentExists
+            ? "There's no way to generate an optimal assignment of drivers to riders. I generated two possibilities though, feel free to modify as needed and post manually.\nOption 1:\n"
+            : ""
+        }${assignments.join("\n")}\n\nUnassigned riders:\n${
+          noIdealAssignmentExists && !noOptimalAssignmentExists
+            ? ridersWithoutDriver2
+            : ridersWithoutDriver.join("\n")
+        }${
           noOptimalAssignmentExists ? "\n\nOption 2:\n" : ""
         }${assignments2Str}`;
-        res.send(assignmentsStr);
 
-        // Write the message to the Slack channel
+        // Send the assignments to the user but without posting publicly
         if (!noOptimalAssignmentExists) {
+          res.send(assignmentsStr);
+        } else {
+          // Write the message to the Slack channel
           const config = {
             headers: { Authorization: `Bearer ${botToken}` },
           };
