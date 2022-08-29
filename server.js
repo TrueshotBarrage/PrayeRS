@@ -327,20 +327,22 @@ app.post("/generate_assignments", async (req, res) => {
           noOptimalAssignmentExists ? "Option 1:\n" : ""
         }${assignments.join(
           "\n"
-        )}\n\nUnassigned riders:\n${ridersWithoutDriver2.join("\n")}${
+        )}\n\nUnassigned riders:\n${ridersWithoutDriver.join("\n")}${
           noOptimalAssignmentExists ? "\n\nOption 2:\n" : ""
         }${assignments2Str}`;
         res.send(assignmentsStr);
 
         // Write the message to the Slack channel
-        const config = {
-          headers: { Authorization: `Bearer ${botToken}` },
-        };
-        const message = {
-          channel: publishedChannel,
-          text: assignmentsStr,
-        };
-        axios.post("https://slack.com/api/chat.postMessage", message, config);
+        if (!noOptimalAssignmentExists) {
+          const config = {
+            headers: { Authorization: `Bearer ${botToken}` },
+          };
+          const message = {
+            channel: publishedChannel,
+            text: assignmentsStr,
+          };
+          axios.post("https://slack.com/api/chat.postMessage", message, config);
+        }
       }
     })
     .catch((error) => {
