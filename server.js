@@ -9,8 +9,8 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
-// const publishedChannel = "CTEJU34FN"; // #prayermeeting
-const publishedChannel = "C040PS45KBJ"; // #bot-test
+const publishedChannel = "CTEJU34FN"; // #prayermeeting
+// const publishedChannel = "C040PS45KBJ"; // #bot-test
 
 const rideLocations = ["north", "west", "collegetown"];
 
@@ -31,8 +31,8 @@ async function readData() {
     },
   };
   return await axios
-    .get("https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be", config)
-    // .get("https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917", config)
+    // .get("https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be", config)
+    .get("https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917", config)
     .then((response) => {
       return response.data.record;
     })
@@ -57,8 +57,8 @@ function writeData(data) {
     },
   };
   axios.put(
-    "https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be",
-    // "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
+    // "https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be",
+    "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917",
     newData,
     config
   );
@@ -210,21 +210,21 @@ app.post("/generate_assignments", async (req, res) => {
         res.send("No one reacted to the message.");
       } else {
         const usersWhoReacted = rxns.map((rxn) => rxn.users).flat();
-        // const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
-        const usersWhoReactedUniq = [
-          "a",
-          "b",
-          "c",
-          "d",
-          "e",
-          "f",
-          "g",
-          "h",
-          "i",
-          "j",
-          "k",
-          "l",
-        ];
+        const usersWhoReactedUniq = [...new Set(usersWhoReacted)];
+        // const usersWhoReactedUniq = [
+        //   "a",
+        //   "b",
+        //   "c",
+        //   "d",
+        //   "e",
+        //   "f",
+        //   "g",
+        //   "h",
+        //   "i",
+        //   "j",
+        //   "k",
+        //   "l",
+        // ];
 
         let driverRiderMap = {};
         let driverRiderMap2 = {};
