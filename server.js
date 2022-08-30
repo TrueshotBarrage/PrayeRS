@@ -15,7 +15,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const botToken = "xoxb-934063095335-4012794661457-ehaYa2U3qbBqDRtKqQMg6T9N";
 
 // Set this to true if production-ready instead of debugging
-const prod = true;
+const prod = false;
 
 // Slack channel IDs in the Emmaus Road workspace
 let publishedChannel;
@@ -150,15 +150,15 @@ async function updateAux(isRider, req, res) {
       console.log(data);
 
       if (isRider) {
-        res.send(`Successfully updated rider ${userName} to ${location}.`);
+        res?.send(`Successfully updated rider ${userName} to ${location}.`);
       } else {
-        res.send(
+        res?.send(
           `Successfully updated driver ${userName} to ${location} with ${maxPassengers} max passengers.`
         );
       }
     });
   } else {
-    res.send(`Sorry, ${req.body.text} is not a valid location.`);
+    res?.send(`Sorry, ${req.body.text} is not a valid location.`);
   }
 }
 
@@ -426,21 +426,56 @@ app.post("/generate_assignments", async (req, res) => {
   await generateAssignments(req, res);
 });
 
+// Maps emojis to rider locations
+function emojiToLocation(emoji) {
+  switch (emoji) {
+    case "arrow_up":
+      return "north";
+    case "arrow_down":
+      return "collegetown";
+    case "arrow_left":
+      return "west";
+    case "awesome":
+      return "williams";
+    default:
+      return "north";
+  }
+}
+
 // Slack Events API handler
 app.post("/events", async (req, res) => {
+  console.log(req);
   res.send(req.body.challenge);
   res.end();
 
-  // Looks like I don't need to use the Events API because I can just
-  // read all the reactions on the target message at a specific time.
-  // Will leave this here for now.
-  // switch (req.body.type) {
-  //   case "reaction_added":
-  //     let data = await readData();
-  //     if (data.ts === req.body.event_ts) {
-  //       ...
-  //     }
-  // }
+  let data;
+  switch (req.body.type) {
+    case "reaction_added":
+      console.log("Reaction was added, checking timestamp of the message");
+      data = await readData();
+
+      if (data.location_ts === req.body.event_ts) {
+        console.log("Timestamp matched, updating location");
+
+        // Create a new body for the internal update rider request
+        newReq = {
+          body: {
+            user_id: req.body.user,
+            text: emojiToLocation(req.body.reaction),
+          },
+        };
+
+        // Update the rider's location
+        await updateAux(true, newReq, undefined);
+
+        console.log(
+          `Updated rider location to ${emojiToLocation(req.body.reaction)}`
+        );
+      }
+      break;
+    default:
+      break;
+  }
 });
 
 // Send a message to the #bot-test channel (C040PS45KBJ)
