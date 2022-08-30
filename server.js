@@ -10,8 +10,11 @@ const port = process.env.PORT || 3000;
 // Get the correct Content-Type encoding for the body
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Hardcoded for now because I don't care about security in this project
-const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
+// Retrieve the Slack bot token from either the env variables or secrets.json
+const botToken = process.env.BOT_TOKEN || readSecrets().botToken;
+
+// Do the same with the master key required for reading data.json
+const masterKey = process.env.MASTER_KEY || readSecrets().masterKey;
 
 // Set this to true if production-ready instead of debugging
 const prod = true;
@@ -50,8 +53,7 @@ app.get("/", (req, res) => {
 async function readData() {
   config = {
     headers: {
-      "X-Master-Key":
-        "$2b$10$r0521y/gY6h7m8iPZprhf.URBBG3nnCyIeNuaLPlUvlFpboTi8BjG",
+      "X-Master-Key": masterKey,
     },
   };
 
@@ -73,8 +75,7 @@ function writeData(data) {
 
   config = {
     headers: {
-      "X-Master-Key":
-        "$2b$10$r0521y/gY6h7m8iPZprhf.URBBG3nnCyIeNuaLPlUvlFpboTi8BjG",
+      "X-Master-Key": masterKey,
       "Content-Type": "application/json",
     },
   };
