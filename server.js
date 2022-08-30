@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Hardcoded for now because I don't care about security in this project
-const botToken = "xoxb-934063095335-4012794661457-MXacNp8j2m7edxUjU2RUoeSe";
+const botToken = "xoxb-934063095335-4012794661457-ehaYa2U3qbBqDRtKqQMg6T9N";
 
 // Set this to true if production-ready instead of debugging
 const prod = true;
