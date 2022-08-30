@@ -2,6 +2,7 @@ const express = require("express");
 // const fs = require("fs");
 const axios = require("axios");
 const bodyParser = require("body-parser");
+const _ = require("lodash/core");
 
 // Create a new express application and expose the port assigned on Heroku
 const app = express();
@@ -23,12 +24,13 @@ if (prod) {
   publishedChannel = "CTEJU34FN"; // #prayermeeting
   dataBinURL = "https://api.jsonbin.io/v3/b/630a88c75c146d63ca823917"; // data.json
 } else {
-  publishedChannel = "C040PS45KBJ"; // #bot-test
+  // publishedChannel = "C040PS45KBJ"; // #bot-test
+  publishedChannel = "C0404EA855L"; // #bot-test222
   dataBinURL = "https://api.jsonbin.io/v3/b/630bcdd7e13e6063dc9009be"; // example_data.json
 }
 
-// Valid ride locations
-const rideLocations = ["north", "west", "collegetown"];
+// Valid ride locations, in desired order of processing
+const rideLocations = ["williams", "collegetown", "west", "north"];
 
 // Test (default) route
 app.get("/", (req, res) => {
@@ -220,7 +222,7 @@ function shuffle(array) {
 }
 
 // Generate driver-rider assignments
-app.post("/generate_assignments", async (req, res) => {
+async function generateAssignments(req, res) {
   let data = await readData();
 
   const config = {
@@ -235,7 +237,7 @@ app.post("/generate_assignments", async (req, res) => {
     .get("https://slack.com/api/reactions.get", config)
     .then((response) => {
       const rxns = response.data.message?.reactions;
-      if (!rxns) {
+      if (!rxns && prod) {
         res.send("No one reacted to the message.");
       } else {
         if (prod) {
@@ -255,6 +257,8 @@ app.post("/generate_assignments", async (req, res) => {
             "j",
             "k",
             "l",
+            "m",
+            "n",
           ];
         }
 
@@ -274,6 +278,7 @@ app.post("/generate_assignments", async (req, res) => {
         let noIdealAssignmentExists = false;
         let noOptimalAssignmentExists = false;
 
+        let validRidersWhoReacted = [];
         // Assign riders to drivers - try to match riders' preferred locations
         for (const userId of usersWhoReactedUniq) {
           // Introduce randomness to the assignment process
@@ -282,6 +287,10 @@ app.post("/generate_assignments", async (req, res) => {
           // Find the rider info from the list of users who reacted to the post
           const rider = data.riders.find((rdr) => rdr.id === userId);
           if (rider) {
+            // Add the rider to a list of who reacted to the post -- used if the
+            // ideal assignment doesn't exist
+            validRidersWhoReacted.push(rider);
+
             // Match the rider to a driver based on capacity and location
             const driver = availableDrivers.find(
               (drv) =>
@@ -305,41 +314,49 @@ app.post("/generate_assignments", async (req, res) => {
           console.log("!!!!!Redoing the assignment process...!!!!!!!");
           noIdealAssignmentExists = true;
 
-          // Sort the riders by their preferred location
-          data.riders.sort((a, b) => {
-            a.location > b.location ? 1 : -1;
-          });
+          // Sort the riders and drivers by their preferred location
+          validRidersWhoReacted = _.sortBy(validRidersWhoReacted, (rdr) =>
+            _.indexOf(rideLocations, rdr.location)
+          );
+          availableDrivers = _.sortBy(availableDrivers, (drv) =>
+            _.indexOf(rideLocations, drv.location)
+          );
 
           // Same process as above, but with a twist
-          for (const userId of usersWhoReactedUniq) {
-            const rider = data.riders.find((rdr) => rdr.id === userId);
-            if (rider) {
-              const driver = availableDrivers.find(
+          console.log(validRidersWhoReacted);
+          for (const rider of validRidersWhoReacted) {
+            const driver = availableDrivers.find(
+              (drv) =>
+                drv.location === rider.location &&
+                drv.maxPassengers - driverRiderMap2[drv.name].length > 0
+            );
+            console.log(`Processing rider: ${rider.name}`);
+            if (driver) {
+              driverRiderMap2[driver.name].push(rider.name);
+              console.log(
+                `Assigned rider ${rider.name} to driver: ${driver.name}`
+              );
+            } else {
+              // The twist: find a driver with capacity, but don't care about location
+              const driverForAnotherLocation = availableDrivers.find(
                 (drv) =>
-                  drv.location === rider.location &&
                   drv.maxPassengers - driverRiderMap2[drv.name].length > 0
               );
-              if (driver) {
-                driverRiderMap2[driver.name].push(rider.name);
-              } else {
-                // The twist: find a driver with capacity, but don't care about location
-                const driverForAnotherLocation = availableDrivers.find(
-                  (drv) =>
-                    drv.maxPassengers - driverRiderMap2[drv.name].length > 0
+              if (driverForAnotherLocation) {
+                // Display the new location so the driver knows
+                const displayedLoc = (string) =>
+                  string.charAt(0).toUpperCase() + string.slice(1);
+                driverRiderMap2[driverForAnotherLocation.name].push(
+                  `${rider.name} (${displayedLoc(rider.location)})`
                 );
-                if (driverForAnotherLocation) {
-                  // Display the new location so the driver knows
-                  const displayedLoc = (string) =>
-                    string.charAt(0).toUpperCase() + string.slice(1);
-                  driverRiderMap2[driverForAnotherLocation.name].push(
-                    `${rider.name} (${displayedLoc(rider.location)})`
-                  );
-                } else {
-                  // We're out of luck - not possible to assign this rider
-                  ridersWithoutDriver2.push(rider.name);
-                  console.log(`No driver found for ${rider.name}`);
-                  noOptimalAssignmentExists = true;
-                }
+                console.log(
+                  `Assigned rider ${rider.name} to driver (another location): ${driverForAnotherLocation.name}`
+                );
+              } else {
+                // We're out of luck - not possible to assign this rider
+                ridersWithoutDriver2.push(rider.name);
+                console.log(`No driver found for ${rider.name}`);
+                noOptimalAssignmentExists = true;
               }
             }
           }
@@ -399,6 +416,14 @@ app.post("/generate_assignments", async (req, res) => {
     .catch((error) => {
       console.log(error);
     });
+}
+
+app.get("/generate_assignments", async (req, res) => {
+  await generateAssignments(req, res);
+});
+
+app.post("/generate_assignments", async (req, res) => {
+  await generateAssignments(req, res);
 });
 
 // Slack Events API handler
