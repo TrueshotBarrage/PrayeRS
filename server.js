@@ -223,7 +223,7 @@ function shuffle(array) {
 }
 
 // Generate driver-rider assignments
-async function generateAssignments(req, res) {
+async function generateAssignments(req, res, writeDirectly) {
   let data = await readData();
 
   const config = {
@@ -246,20 +246,26 @@ async function generateAssignments(req, res) {
           var usersWhoReactedUniq = [...new Set(usersWhoReacted)];
         } else {
           var usersWhoReactedUniq = [
-            "a",
-            "b",
-            "c",
-            "d",
-            "e",
-            "f",
-            "g",
-            "h",
-            "i",
-            "j",
-            "k",
-            "l",
-            "m",
-            "n",
+            "U01A6CLST1Q",
+            "UTPGAGUEN",
+            "U02E7BNCET0",
+            "UTHCE2TM4",
+            "U01CZTPKLPK",
+            "U019RFGMB1D",
+            "U01BQFS8YA2",
+            "U02HRJUPYLU",
+            "U038JE95XS4",
+            "U03UH8X0PCJ",
+            "U02CNNT66AE",
+            "U02BSCKMYT1",
+            "U03NS41HM5G",
+            "U03U2085Q5D",
+            "U03U20809GF",
+            "U02C9KRF22K",
+            "U02CG5M067Q",
+            "U02H30L4N5U",
+            "UT4144HTK",
+            "U03UYFXDZ4H",
           ];
         }
 
@@ -401,16 +407,22 @@ async function generateAssignments(req, res) {
         if (noOptimalAssignmentExists) {
           res.send(assignmentsStr);
         } else {
-          res.send("Successfully generated assignments!");
+          res.send(`Successfully generated assignments!\n${assignmentsStr}`);
           // Write the message to the Slack channel
-          const config = {
-            headers: { Authorization: `Bearer ${botToken}` },
-          };
-          const message = {
-            channel: publishedChannel,
-            text: assignmentsStr,
-          };
-          axios.post("https://slack.com/api/chat.postMessage", message, config);
+          if (writeDirectly) {
+            const config = {
+              headers: { Authorization: `Bearer ${botToken}` },
+            };
+            const message = {
+              channel: publishedChannel,
+              text: assignmentsStr,
+            };
+            axios.post(
+              "https://slack.com/api/chat.postMessage",
+              message,
+              config
+            );
+          }
         }
       }
     })
@@ -420,11 +432,11 @@ async function generateAssignments(req, res) {
 }
 
 app.get("/generate_assignments", async (req, res) => {
-  await generateAssignments(req, res);
+  await generateAssignments(req, res, true);
 });
 
 app.post("/generate_assignments", async (req, res) => {
-  await generateAssignments(req, res);
+  await generateAssignments(req, res, req.body.text);
 });
 
 // Slack Events API handler
@@ -444,10 +456,10 @@ app.post("/events", async (req, res) => {
   // }
 });
 
-// Send a message to the #bot-test channel (C040PS45KBJ)
+// Send a test message to the channel
 app.get("/send/test/:text", (req, res) => {
   const message = {
-    channel: "C040PS45KBJ",
+    channel: publishedChannel,
     text: req.params.text,
   };
   const config = {
