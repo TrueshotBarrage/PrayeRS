@@ -1,5 +1,5 @@
 const express = require("express");
-// const fs = require("fs");
+const fs = require("fs");
 const axios = require("axios");
 const bodyParser = require("body-parser");
 const _ = require("lodash/core");
@@ -40,11 +40,10 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-// Deprecated; Heroku's filesystem is ephermeral so this won't do
-// function readData() {
-//   const rawData = fs.readFileSync("data.json");
-//   return JSON.parse(rawData);
-// }
+function readSecrets() {
+  const rawData = fs.readFileSync("secrets.json");
+  return JSON.parse(rawData);
+}
 
 // function writeData(data) {
 //   const newData = JSON.stringify(data);
