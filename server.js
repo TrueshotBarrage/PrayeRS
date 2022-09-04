@@ -80,7 +80,9 @@ function writeData(data) {
       "Content-Type": "application/json",
     },
   };
-  axios.put(dataBinURL, newData, config);
+  axios.put(dataBinURL, newData, config).catch((error) => {
+    console.log(error);
+  });
 }
 
 // Fetch and parse the user's public name on Slack; use display name if available
